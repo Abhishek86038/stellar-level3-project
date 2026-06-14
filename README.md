@@ -34,13 +34,32 @@ Open your browser to `http://localhost:5173` to view the application.
 - Make sure your Freighter wallet is set to **Testnet**.
 - You can fund your Testnet account using the [Stellar Laboratory Friendbot](https://laboratory.stellar.org/#account-creator?network=test).
 
+## Deployed Contract
+- Contract Address: CDXZYQIOKU6JHHFC2BTKMJRAPNEH4GNWXCV6KSKXL5JRMR3B4MSBXQE7
+- Network: Stellar Testnet
+
+## Transaction Hash of Contract Call
+- Hash: <add after first contract call>
+- Verify on: https://stellar.expert/explorer/testnet/tx/<hash>
+
 ## Screenshots
-_Placeholders for project documentation screenshots:_
+### 1. Wallet Selection Modal
+[Add screenshot here]
 
-- **[Screenshot: Wallet Connected]** - ![alt text](image.png)
+### 2. Wallet Connected State  
+[Add screenshot here]
 
-- **[Screenshot: Balance Shown]** - ![alt text](image-1.png)
+### 3. XLM Balance Displayed
+[Add screenshot here]
 
-- **[Screenshot: Transaction Success]** - ![alt text](image-2.png)
+### 4. Contract Set Value Success
+[Add screenshot here]
 
-- **[Screenshot: Transaction Hash Visible]** - ![alt text](image-3.png)
+### 5. Contract Get Value Response
+[Add screenshot here]
+
+### 6. Transaction Status (Pending/Success/Fail)
+[Add screenshot here]
+
+### 7. Error Handling (wallet not found / rejected / insufficient balance)
+[Add screenshot here]

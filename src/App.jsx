@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { connectWallet, getBalance, sendPayment } from './stellar';
+import { setContractValue, getContractValue, CONTRACT_ADDRESS } from './contract';
 import './index.css';
 
 function App() {
@@ -7,9 +8,38 @@ function App() {
   const [balance, setBalance] = useState('');
   const [destination, setDestination] = useState('');
   const [amount, setAmount] = useState('');
+  
+  // Transaction State
   const [status, setStatus] = useState('');
+  const [statusType, setStatusType] = useState(''); // pending, success, failed
   const [txHash, setTxHash] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Contract State
+  const [contractKey, setContractKey] = useState('');
+  const [contractValue, setContractValueState] = useState('');
+  const [contractResponse, setContractResponse] = useState('');
+  const [isContractLoading, setIsContractLoading] = useState(false);
+
+  const fetchBalance = async (pubKey) => {
+    try {
+      const bal = await getBalance(pubKey);
+      setBalance(bal);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Poll contract state and balance every 10 seconds when connected
+  useEffect(() => {
+    if (!publicKey) return;
+
+    const interval = setInterval(() => {
+      fetchBalance(publicKey);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [publicKey]);
 
   const handleConnect = async () => {
     try {
@@ -19,6 +49,7 @@ function App() {
       setPublicKey(pubKey);
       await fetchBalance(pubKey);
     } catch (err) {
+      setStatusType('failed');
       setStatus(`Error connecting wallet: ${err.message}`);
     } finally {
       setLoading(false);
@@ -32,35 +63,67 @@ function App() {
     setAmount('');
     setStatus('');
     setTxHash('');
-  };
-
-  const fetchBalance = async (pubKey) => {
-    try {
-      const bal = await getBalance(pubKey);
-      setBalance(bal);
-    } catch (err) {
-      setStatus(`Error fetching balance: ${err.message}`);
-    }
+    setContractResponse('');
   };
 
   const handleSend = async (e) => {
     e.preventDefault();
     if (!destination || !amount) {
+      setStatusType('failed');
       setStatus('Please enter destination and amount');
       return;
     }
     try {
-      setStatus('Processing transaction...');
+      setStatusType('pending');
+      setStatus('Transaction submitted, waiting...');
       setTxHash('');
       setLoading(true);
       const response = await sendPayment(destination, amount, publicKey);
-      setTxHash(response.hash);
+      setTxHash(response.hash || response.id);
+      setStatusType('success');
       setStatus('Transaction successful!');
       await fetchBalance(publicKey); // Auto refresh balance
     } catch (err) {
+      setStatusType('failed');
       setStatus(`Transaction failed: ${err.message}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSetContract = async (e) => {
+    e.preventDefault();
+    if (!contractKey || !contractValue) return;
+    try {
+      setIsContractLoading(true);
+      setStatusType('pending');
+      setStatus('Contract transaction submitted, waiting...');
+      setTxHash('');
+      const response = await setContractValue(contractKey, contractValue, publicKey);
+      setTxHash(response.hash || response.id);
+      setStatusType('success');
+      setStatus('Contract Set successful!');
+      
+      // Auto-refresh the stored value
+      handleGetContract(null, contractKey);
+    } catch (err) {
+      setStatusType('failed');
+      setStatus(`Contract Set failed: ${err.message}`);
+    } finally {
+      setIsContractLoading(false);
+    }
+  };
+
+  const handleGetContract = async (e, overrideKey) => {
+    if (e) e.preventDefault();
+    const keyToUse = overrideKey || contractKey;
+    if (!keyToUse) return;
+    try {
+      setContractResponse('Fetching...');
+      const value = await getContractValue(keyToUse);
+      setContractResponse(`Value for ${keyToUse}: ${value}`);
+    } catch (err) {
+      setContractResponse(`Error: ${err.message}`);
     }
   };
 
@@ -68,11 +131,11 @@ function App() {
     <div className="container">
       <div className="card">
         <h1>Stellar Payment dApp</h1>
-        <p className="subtitle">Testnet Environment</p>
+        <p className="subtitle">Testnet Environment (Yellow Belt)</p>
 
         {!publicKey ? (
           <button className="btn primary" onClick={handleConnect} disabled={loading}>
-            {loading ? 'Connecting...' : 'Connect Freighter Wallet'}
+            {loading ? 'Connecting...' : 'Connect Wallet'}
           </button>
         ) : (
           <div className="wallet-info">
@@ -115,10 +178,50 @@ function App() {
                 {loading ? 'Processing...' : 'Send Transaction'}
               </button>
             </form>
+
+            <div className="contract-form">
+              <h3>Contract Interaction</h3>
+              <p className="small-text">Contract: <span className="truncate">{CONTRACT_ADDRESS}</span></p>
+              <div className="form-group">
+                <label>Key (Symbol)</label>
+                <input
+                  type="text"
+                  placeholder="my_key"
+                  value={contractKey}
+                  onChange={(e) => setContractKey(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label>Value (Number)</label>
+                <input
+                  type="number"
+                  placeholder="123"
+                  value={contractValue}
+                  onChange={(e) => setContractValueState(e.target.value)}
+                />
+              </div>
+              <div className="btn-group">
+                 <button className="btn primary" onClick={handleSetContract} disabled={isContractLoading || !contractKey || !contractValue}>
+                   {isContractLoading ? 'Processing...' : 'Set Value'}
+                 </button>
+                 <button className="btn secondary" onClick={(e) => handleGetContract(e)} disabled={!contractKey}>
+                   Get Value
+                 </button>
+              </div>
+              {contractResponse && (
+                <div className="contract-response">
+                  <strong>Response:</strong> {contractResponse}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        {status && <div className={`status ${txHash ? 'success' : 'error'}`}>{status}</div>}
+        {status && (
+          <div className={`status ${statusType}`}>
+            {status}
+          </div>
+        )}
         {txHash && (
           <div className="tx-hash">
             <strong>Transaction Hash:</strong>
