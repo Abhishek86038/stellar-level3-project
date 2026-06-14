@@ -1,26 +1,50 @@
 import { Server } from "@stellar/stellar-sdk/horizon";
 import { Networks, TransactionBuilder, Operation, Asset, Keypair } from "@stellar/stellar-sdk";
-import { getPublicKey, signTransaction, isConnected } from "@stellar/freighter-api";
+import { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit/sdk";
+import { Networks as WalletNetworks } from "@creit.tech/stellar-wallets-kit/types";
+import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
+
+// Initialize the kit globally
+StellarWalletsKit.init({
+  modules: defaultModules(),
+  network: WalletNetworks.TESTNET
+});
+
+export const kit = StellarWalletsKit;
 
 const server = new Server("https://horizon-testnet.stellar.org");
 
 export const connectWallet = async () => {
-  if (await isConnected()) {
-    const publicKey = await getPublicKey();
-    return publicKey;
+  try {
+    const { address } = await kit.authModal();
+    if (!address) throw new Error("Wallet not found / not installed");
+    return address;
+  } catch (err) {
+    if ((err.message && err.message.includes("decline")) || (err.message && err.message.includes("reject")) || (err.message && err.message.includes("cancel"))) {
+      throw new Error("User rejected the connection");
+    }
+    throw new Error(err.message || "Wallet not found / not installed");
   }
-  throw new Error("Freighter wallet is not installed or not connected.");
 };
 
 export const getBalance = async (publicKey) => {
-  const account = await server.loadAccount(publicKey);
-  const balance = account.balances.find((b) => b.asset_type === "native");
-  return balance ? balance.balance : "0";
+  try {
+    const account = await server.loadAccount(publicKey);
+    const balance = account.balances.find((b) => b.asset_type === "native");
+    return balance ? balance.balance : "0";
+  } catch(e) {
+    return "0";
+  }
 };
 
 export const sendPayment = async (destination, amount, publicKey) => {
   const sourceAccount = await server.loadAccount(publicKey);
   const fee = await server.fetchBaseFee();
+
+  const balance = await getBalance(publicKey);
+  if (parseFloat(balance) < parseFloat(amount)) {
+      throw new Error("Insufficient balance before sending transaction");
+  }
 
   const transaction = new TransactionBuilder(sourceAccount, {
     fee,
@@ -36,12 +60,13 @@ export const sendPayment = async (destination, amount, publicKey) => {
     .setTimeout(180)
     .build();
 
-  const xdr = transaction.toXDR();
-  const signedXdr = await signTransaction(xdr, { networkPassphrase: Networks.TESTNET });
+  const { signedTxXdr } = await kit.signTransaction(transaction.toXDR(), { 
+      networkPassphrase: Networks.TESTNET,
+      address: publicKey
+  });
   
-  // Reconstruct transaction from signed XDR and submit
-  const transactionToSubmit = TransactionBuilder.fromXDR(signedXdr, Networks.TESTNET);
-  const response = await server.submitTransaction(transactionToSubmit);
+  const txToSubmit = TransactionBuilder.fromXDR(signedTxXdr, Networks.TESTNET);
+  const response = await server.submitTransaction(txToSubmit);
   
   return response;
 };
