@@ -1,98 +1,123 @@
-# Stellar testnet Payment dApp
+# Stellar Payment dApp
 
-A fully functional web application that allows users to connect their Freighter wallet, view their Stellar Testnet XLM balance, and send XLM to other addresses on the Testnet. This app interacts directly with the Stellar Horizon Testnet via the official SDKs.
+## Description
+A production-ready Stellar testnet dApp built with React and Vite. 
+Features multi-wallet integration, two deployed Soroban smart contracts 
+with inter-contract communication, real-time event streaming, automated 
+testing, CI/CD pipeline, and a fully mobile-responsive interface.
 
-## Features
-- **Wallet Connection**: Connects to the Freighter browser extension to securely access the user's Stellar public key.
-- **Balance Display**: Fetches the actual XLM balance from the Horizon Testnet API.
-- **Send Payments**: Allows users to transfer XLM by constructing, signing, and submitting transactions to the Testnet.
+## Live Demo
+https://stellar-level3-project.vercel.app/
 
-## Technologies Used
-- React
-- Vite
-- `@stellar/stellar-sdk`
-- `@stellar/freighter-api`
+## Demo Video
+[Add 1-2 minute demo video link here]
 
-## Getting Started
+## Prerequisites
+- Node.js installed
+- Rust and Cargo installed (for contract development/testing)
+- A Stellar wallet browser extension (Freighter, xBull, Lobstr, or Albedo)
+- Wallet set to Stellar Testnet network
 
-Follow these steps to run the application locally:
-
-### 1. Install Dependencies
-```bash
-npm install
-```
-
-### 2. Run the Development Server
-```bash
-npm run dev
-```
-
-Open your browser to `http://localhost:5173` to view the application. 
-
-### Usage Notes
-- Ensure you have the [Freighter browser extension](https://www.freighter.app/) installed and configured.
-- Make sure your Freighter wallet is set to **Testnet**.
-- You can fund your Testnet account using the [Stellar Laboratory Friendbot](https://laboratory.stellar.org/#account-creator?network=test).
+## Setup Instructions
+1. Clone the repository
+   git clone <your-repo-url>
+   cd <project-folder>
+2. Install dependencies
+   npm install
+3. Start the development server
+   npm run dev
+4. Open browser at http://localhost:5173
 
 ## Deployed Contracts
-### 1. SimpleStorage Contract
-- Contract Address: `CCAPG2U42HTAHWLUY46I5J5ZQ7V6CKUC2NXZWNUXMBO7RAV3NNYPXJOA`
-- Network: Stellar Testnet
-- Transaction Hash of Contract Call: `fbb36760ca3ef1b0f4904f52011e10719309bfdaebe6318091e1d62a8e2be795`
-- Verify on: https://stellar.expert/explorer/testnet/tx/fbb36760ca3ef1b0f4904f52011e10719309bfdaebe6318091e1d62a8e2be795
 
-### 2. PaymentTracker Contract (Level 3 Orange Belt)
-- Contract Address: `CAC75NNARRWQXNJK2NI22JQF3KV2NJY2VYYRYHYXFHNH66VDDNYXU727`
+### SimpleStorage Contract
+- Contract Address: CCAPG2U42HTAHWLUY46I5J5ZQ7V6CKUC2NXZWNUXMBO7RAV3NNYPXJOA
 - Network: Stellar Testnet
-- Features: 
-  - Records payments (`record_payment`, `get_payment_count`, `get_payment_history`)
-  - Calls `SimpleStorage` via cross-contract call (`env.invoke_contract`) to set the `last_pay` key with the payment amount
-  - Emits Soroban events for real-time tracking
-- Deployment Transaction Hash: `4ff4e48125e40e52d6cf621c4e244d6f4533d870c6757fcde52d106028e4803b`
-- Verify on: https://stellar.expert/explorer/testnet/tx/4ff4e48125e40e52d6cf621c4e244d6f4533d870c6757fcde52d106028e4803b
+- Explorer: https://lab.stellar.org/r/testnet/contract/CCAPG2U42HTAHWLUY46I5J5ZQ7V6CKUC2NXZWNUXMBO7RAV3NNYPXJOA
+
+### PaymentTracker Contract
+- Contract Address: CAC75NNARRWQXNJK2NI22JQF3KV2NJY2VYYRYHYXFHNH66VDDNYXU727
+- Network: Stellar Testnet
+- Explorer: https://lab.stellar.org/r/testnet/contract/CAC75NNARRWQXNJK2NI22JQF3KV2NJY2VYYRYHYXFHNH66VDDNYXU727
+- Calls SimpleStorage contract internally (inter-contract communication)
+
+## Transaction Hashes
+
+### Contract Deployment
+- Hash: 4ff4e48125e40e52d6cf621c4e244d6f4533d870c6757fcde52d106028e4803b
+- Verify: https://stellar.expert/explorer/testnet/tx/4ff4e48125e40e52d6cf621c4e244d6f4533d870c6757fcde52d106028e4803b
+
+### Contract Interaction (PaymentTracker call)
+- Hash: [Add after calling record_payment from frontend]
+- Verify: [Add stellar.expert link]
+
+## Features
+- Multi-wallet connection via StellarWalletsKit (Freighter, xBull, Lobstr, Albedo)
+- Real-time XLM balance display
+- Send XLM transactions on testnet
+- Transaction history viewer
+- Two deployed Soroban smart contracts with inter-contract communication
+- Real-time Activity Feed using Soroban event streaming (auto-updates, no manual refresh)
+- Transaction status tracking (pending/success/failed)
+- Error handling for: wallet not found, user rejected connection, insufficient balance
+- Fully mobile responsive design (tested at 768px and 480px breakpoints)
+
+## Testing
+
+### Smart Contract Tests
+Run with:
+cd contract && cargo test
+- 4 tests passing (SimpleStorage: 2, PaymentTracker: 2)
+
+### Frontend Tests
+Run with:
+npm run test
+- 2 tests passing
+
+## CI/CD Pipeline
+This project uses GitHub Actions for continuous integration.
+Pipeline runs automatically on every push to main branch and includes:
+- Frontend dependency install and test execution
+- Frontend build verification
+- Rust/Soroban contract test execution
+View pipeline status: https://github.com/Abhishek86038/stellar-level3-project/actions
 
 ## Screenshots
-### 1. Wallet Selection Modal
+
+### 1. Wallet Options / Selection Modal
 [Add screenshot here]
 
-### 2. Wallet Connected State  
+### 2. Wallet Connected State
 [Add screenshot here]
 
 ### 3. XLM Balance Displayed
 [Add screenshot here]
 
-### 4. Contract Set Value Success
+### 4. Successful Testnet Transaction
 [Add screenshot here]
 
-### 5. Contract Get Value Response
+### 5. Real-time Activity Feed
 [Add screenshot here]
 
-### 6. Transaction Status (Pending/Success/Fail)
+### 6. Mobile Responsive UI
 [Add screenshot here]
 
-### 7. Error Handling (wallet not found / rejected / insufficient balance)
+### 7. CI/CD Pipeline Running (GitHub Actions)
 [Add screenshot here]
 
-## Testing
-### Smart Contract Tests
-Run with: `cd contract && cargo test` (for SimpleStorage) and `cd contract/payment_tracker && cargo test`
-- 4 tests passing (2 SimpleStorage, 2 PaymentTracker)
+### 8. Test Output (3+ passing tests)
+[Add screenshot here]
 
-### Frontend Tests
-Run with: `npm run test`
-- 2 tests passing
+### 9. Error Handling Examples
+[Add screenshot here]
 
-## CI/CD Pipeline
-This project uses GitHub Actions for continuous integration.
-Pipeline runs on every push to main branch and includes:
-- Frontend test execution
-- Frontend build verification
-- Smart contract test execution
-View pipeline status: https://github.com/Abhishek86038/stellar-level3-project/actions
-
-## Live Demo
-https://stellar-level3-project.vercel.app/
-
-## Mobile Responsive
-This application is fully responsive and tested on mobile viewports 
-(480px and 768px breakpoints).
+## Tech Stack
+- React + Vite
+- @creit-tech/stellar-wallets-kit
+- @stellar/stellar-sdk
+- Soroban Smart Contracts (Rust)
+- Vitest (frontend testing)
+- GitHub Actions (CI/CD)
+- Vercel (deployment)
+- Stellar Horizon Testnet
+- Stellar Soroban RPC Testnet
