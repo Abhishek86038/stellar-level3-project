@@ -12,6 +12,7 @@ https://stellar-level3-project.vercel.app/
 ## Demo Video
 https://youtu.be/gfPN5L6c26U?si=ZkMfQsuMiSIuKP7C
 
+
 ## Prerequisites
 - Node.js installed
 - Rust and Cargo installed (for contract development/testing)
@@ -31,9 +32,9 @@ https://youtu.be/gfPN5L6c26U?si=ZkMfQsuMiSIuKP7C
 ## Deployed Contracts
 
 ### SimpleStorage Contract
-- Contract Address: CCXXO7A4IWIWSRUD7WHDBREXKQPVDFDLS3BRVB4DC3ADKBEIKRWHM47Z
+- Contract Address: CCAPG2U42HTAHWLUY46I5J5ZQ7V6CKUC2NXZWNUXMBO7RAV3NNYPXJOA
 - Network: Stellar Testnet
-- Explorer: https://lab.stellar.org/r/testnet/contract/CCXXO7A4IWIWSRUD7WHDBREXKQPVDFDLS3BRVB4DC3ADKBEIKRWHM47Z
+- Explorer: https://lab.stellar.org/r/testnet/contract/CCAPG2U42HTAHWLUY46I5J5ZQ7V6CKUC2NXZWNUXMBO7RAV3NNYPXJOA
 
 ### PaymentTracker Contract
 - Contract Address: CAC75NNARRWQXNJK2NI22JQF3KV2NJY2VYYRYHYXFHNH66VDDNYXU727
@@ -48,8 +49,8 @@ https://youtu.be/gfPN5L6c26U?si=ZkMfQsuMiSIuKP7C
 - Verify: https://stellar.expert/explorer/testnet/tx/4ff4e48125e40e52d6cf621c4e244d6f4533d870c6757fcde52d106028e4803b
 
 ### Contract Interaction (PaymentTracker call)
-- Hash: [Add after calling record_payment from frontend]
-- Verify: [Add stellar.expert link]
+- Hash: c6418d4e4ca1b35b9bdc5a2ab653335bddd323bc71f8b01feaa8b531bb299137
+- Verify: https://stellar.expert/explorer/testnet/tx/c6418d4e4ca1b35b9bdc5a2ab653335bddd323bc71f8b01feaa8b531bb299137
 
 ## Features
 - Multi-wallet connection via StellarWalletsKit (Freighter, xBull, Lobstr, Albedo)
@@ -72,7 +73,7 @@ cd contract && cargo test
 ### Frontend Tests
 Run with:
 npm run test
-- 4 tests passing
+- 2 tests passing
 
 ## CI/CD Pipeline
 This project uses GitHub Actions for continuous integration.
