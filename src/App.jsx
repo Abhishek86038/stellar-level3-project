@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { connectWallet, getBalance, sendPayment } from './stellar';
 import { setContractValue, getContractValue, CONTRACT_ADDRESS } from './contract';
+import { recordPayment } from './paymentContract';
+import ActivityFeed from './components/ActivityFeed';
 import './index.css';
+import './styles/responsive.css';
 
 function App() {
   const [publicKey, setPublicKey] = useState('');
@@ -80,8 +83,12 @@ function App() {
       setLoading(true);
       const response = await sendPayment(destination, amount, publicKey);
       setTxHash(response.hash || response.id);
+      
+      setStatus('Payment sent. Recording on smart contract...');
+      await recordPayment(publicKey, destination, amount, publicKey);
+
       setStatusType('success');
-      setStatus('Transaction successful!');
+      setStatus('Transaction and recording successful!');
       await fetchBalance(publicKey); // Auto refresh balance
     } catch (err) {
       setStatusType('failed');
@@ -234,6 +241,8 @@ function App() {
             </a>
           </div>
         )}
+
+        {publicKey && <ActivityFeed />}
       </div>
     </div>
   );

@@ -34,13 +34,22 @@ Open your browser to `http://localhost:5173` to view the application.
 - Make sure your Freighter wallet is set to **Testnet**.
 - You can fund your Testnet account using the [Stellar Laboratory Friendbot](https://laboratory.stellar.org/#account-creator?network=test).
 
-## Deployed Contract
-- Contract Address: CCAPG2U42HTAHWLUY46I5J5ZQ7V6CKUC2NXZWNUXMBO7RAV3NNYPXJOA
+## Deployed Contracts
+### 1. SimpleStorage Contract
+- Contract Address: `CCAPG2U42HTAHWLUY46I5J5ZQ7V6CKUC2NXZWNUXMBO7RAV3NNYPXJOA`
 - Network: Stellar Testnet
-
-## Transaction Hash of Contract Call
-- Hash: fbb36760ca3ef1b0f4904f52011e10719309bfdaebe6318091e1d62a8e2be795
+- Transaction Hash of Contract Call: `fbb36760ca3ef1b0f4904f52011e10719309bfdaebe6318091e1d62a8e2be795`
 - Verify on: https://stellar.expert/explorer/testnet/tx/fbb36760ca3ef1b0f4904f52011e10719309bfdaebe6318091e1d62a8e2be795
+
+### 2. PaymentTracker Contract (Level 3 Orange Belt)
+- Contract Address: `CAC75NNARRWQXNJK2NI22JQF3KV2NJY2VYYRYHYXFHNH66VDDNYXU727`
+- Network: Stellar Testnet
+- Features: 
+  - Records payments (`record_payment`, `get_payment_count`, `get_payment_history`)
+  - Calls `SimpleStorage` via cross-contract call (`env.invoke_contract`) to set the `last_pay` key with the payment amount
+  - Emits Soroban events for real-time tracking
+- Deployment Transaction Hash: `4ff4e48125e40e52d6cf621c4e244d6f4533d870c6757fcde52d106028e4803b`
+- Verify on: https://stellar.expert/explorer/testnet/tx/4ff4e48125e40e52d6cf621c4e244d6f4533d870c6757fcde52d106028e4803b
 
 ## Screenshots
 ### 1. Wallet Selection Modal
