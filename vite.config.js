@@ -12,5 +12,9 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ['@stellar/stellar-sdk/horizon']
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true
   }
 })

@@ -75,3 +75,65 @@ impl PaymentTracker {
         env.storage().persistent().get(&history_key).unwrap_or(Vec::new(&env))
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use soroban_sdk::{testutils::{Address as _, Events}, Env, vec};
+
+    #[contract]
+    pub struct MockStorage;
+    #[contractimpl]
+    impl MockStorage {
+        pub fn set(_env: Env, _key: Symbol, _value: u64) {}
+    }
+
+    #[test]
+    fn test_record_payment() {
+        let env = Env::default();
+        env.mock_all_auths();
+        
+        let contract_id = env.register_contract(None, PaymentTracker);
+        let client = PaymentTrackerClient::new(&env, &contract_id);
+        
+        let storage_id = env.register_contract(None, MockStorage);
+
+        let sender = Address::generate(&env);
+        let receiver = Address::generate(&env);
+        
+        client.record_payment(&sender, &receiver, &100, &storage_id);
+        
+        // Verify event
+        let events = env.events().all();
+        assert_eq!(events.len(), 1);
+        
+        // Verify payment count
+        assert_eq!(client.get_payment_count(&sender), 1);
+        
+        // Verify history
+        let history = client.get_payment_history(&sender);
+        assert_eq!(history.len(), 1);
+        assert_eq!(history.get(0).unwrap().amount, 100);
+    }
+
+    #[test]
+    fn test_get_payment_count() {
+        let env = Env::default();
+        env.mock_all_auths();
+        
+        let contract_id = env.register_contract(None, PaymentTracker);
+        let client = PaymentTrackerClient::new(&env, &contract_id);
+        let storage_id = env.register_contract(None, MockStorage);
+
+        let sender = Address::generate(&env);
+        let receiver = Address::generate(&env);
+        
+        assert_eq!(client.get_payment_count(&sender), 0);
+        
+        client.record_payment(&sender, &receiver, &50, &storage_id);
+        assert_eq!(client.get_payment_count(&sender), 1);
+        
+        client.record_payment(&sender, &receiver, &25, &storage_id);
+        assert_eq!(client.get_payment_count(&sender), 2);
+    }
+}

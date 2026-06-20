@@ -72,3 +72,27 @@ Open your browser to `http://localhost:5173` to view the application.
 
 ### 7. Error Handling (wallet not found / rejected / insufficient balance)
 [Add screenshot here]
+
+## Testing
+### Smart Contract Tests
+Run with: `cd contract && cargo test` (for SimpleStorage) and `cd contract/payment_tracker && cargo test`
+- 4 tests passing (2 SimpleStorage, 2 PaymentTracker)
+
+### Frontend Tests
+Run with: `npm run test`
+- 2 tests passing
+
+## CI/CD Pipeline
+This project uses GitHub Actions for continuous integration.
+Pipeline runs on every push to main branch and includes:
+- Frontend test execution
+- Frontend build verification
+- Smart contract test execution
+View pipeline status: https://github.com/Abhishek86038/stellar-level3-project/actions
+
+## Live Demo
+https://stellar-level3-project.vercel.app/
+
+## Mobile Responsive
+This application is fully responsive and tested on mobile viewports 
+(480px and 768px breakpoints).
