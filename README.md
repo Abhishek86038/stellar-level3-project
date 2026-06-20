@@ -10,7 +10,7 @@ testing, CI/CD pipeline, and a fully mobile-responsive interface.
 https://stellar-level3-project.vercel.app/
 
 ## Demo Video
-[Add 1-2 minute demo video link here]
+https://youtu.be/gfPN5L6c26U?si=ZkMfQsuMiSIuKP7C
 
 ## Prerequisites
 - Node.js installed
@@ -31,9 +31,9 @@ https://stellar-level3-project.vercel.app/
 ## Deployed Contracts
 
 ### SimpleStorage Contract
-- Contract Address: CCAPG2U42HTAHWLUY46I5J5ZQ7V6CKUC2NXZWNUXMBO7RAV3NNYPXJOA
+- Contract Address: CCXXO7A4IWIWSRUD7WHDBREXKQPVDFDLS3BRVB4DC3ADKBEIKRWHM47Z
 - Network: Stellar Testnet
-- Explorer: https://lab.stellar.org/r/testnet/contract/CCAPG2U42HTAHWLUY46I5J5ZQ7V6CKUC2NXZWNUXMBO7RAV3NNYPXJOA
+- Explorer: https://lab.stellar.org/r/testnet/contract/CCXXO7A4IWIWSRUD7WHDBREXKQPVDFDLS3BRVB4DC3ADKBEIKRWHM47Z
 
 ### PaymentTracker Contract
 - Contract Address: CAC75NNARRWQXNJK2NI22JQF3KV2NJY2VYYRYHYXFHNH66VDDNYXU727
@@ -72,7 +72,7 @@ cd contract && cargo test
 ### Frontend Tests
 Run with:
 npm run test
-- 2 tests passing
+- 4 tests passing
 
 ## CI/CD Pipeline
 This project uses GitHub Actions for continuous integration.
@@ -85,31 +85,31 @@ View pipeline status: https://github.com/Abhishek86038/stellar-level3-project/ac
 ## Screenshots
 
 ### 1. Wallet Options / Selection Modal
-[Add screenshot here]
+![alt text](image-12.png)
 
 ### 2. Wallet Connected State
-[Add screenshot here]
+![alt text](image-11.png)
 
 ### 3. XLM Balance Displayed
-[Add screenshot here]
+![alt text](image-13.png)
 
 ### 4. Successful Testnet Transaction
-[Add screenshot here]
+![alt text](image-14.png)
 
 ### 5. Real-time Activity Feed
-[Add screenshot here]
+![alt text](image-15.png)
 
 ### 6. Mobile Responsive UI
-[Add screenshot here]
+![alt text](image-16.png)  ![alt text](image-17.png)
 
 ### 7. CI/CD Pipeline Running (GitHub Actions)
-[Add screenshot here]
+![alt text](image-18.png)
 
 ### 8. Test Output (3+ passing tests)
-[Add screenshot here]
+![alt text](image-20.png)
 
 ### 9. Error Handling Examples
-[Add screenshot here]
+![alt text](image-21.png)
 
 ## Tech Stack
 - React + Vite
