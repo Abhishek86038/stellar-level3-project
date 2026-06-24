@@ -33,6 +33,7 @@ export const getBalance = async (publicKey) => {
     const balance = account.balances.find((b) => b.asset_type === "native");
     return balance ? balance.balance : "0";
   } catch(e) {
+    console.error("Error fetching balance from Horizon Testnet:", e);
     return "0";
   }
 };
