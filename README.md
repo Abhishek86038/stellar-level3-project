@@ -1,10 +1,7 @@
 # Stellar Payment dApp
 
 ## Description
-A production-ready Stellar testnet dApp built with React and Vite. 
-Features multi-wallet integration, two deployed Soroban smart contracts 
-with inter-contract communication, real-time event streaming, automated 
-testing, CI/CD pipeline, and a fully mobile-responsive interface.
+This project solves a real gap in the Stellar ecosystem: payments lack native categorization and tracking. PaymentTracker is a unified Soroban contract that records, categorizes, and aggregates Stellar payments by type (rent, family support, business, savings), giving users real expense insights directly on-chain — solving a problem that affects every Stellar payment use case, from remittances to business payroll. Features multi-wallet integration, real-time event streaming, automated testing, CI/CD pipeline, and a fully mobile-responsive interface.
 
 ## Live Demo
 https://stellar-level3-project.vercel.app/
@@ -31,33 +28,28 @@ https://youtu.be/gfPN5L6c26U?si=ZkMfQsuMiSIuKP7C
 
 ## Deployed Contracts
 
-### SimpleStorage Contract
-- Contract Address: CCAPG2U42HTAHWLUY46I5J5ZQ7V6CKUC2NXZWNUXMBO7RAV3NNYPXJOA
-- Network: Stellar Testnet
-- Explorer: https://lab.stellar.org/r/testnet/contract/CCAPG2U42HTAHWLUY46I5J5ZQ7V6CKUC2NXZWNUXMBO7RAV3NNYPXJOA
-
 ### PaymentTracker Contract
-- Contract Address: CAC75NNARRWQXNJK2NI22JQF3KV2NJY2VYYRYHYXFHNH66VDDNYXU727
+- Contract Address: CAU3HW7S26KXVGP7VE3JKNY2MFCUSDRWO4LPOM5HSLWAUQPP4MQFSMOF
 - Network: Stellar Testnet
-- Explorer: https://lab.stellar.org/r/testnet/contract/CAC75NNARRWQXNJK2NI22JQF3KV2NJY2VYYRYHYXFHNH66VDDNYXU727
-- Calls SimpleStorage contract internally (inter-contract communication)
+- Explorer: https://lab.stellar.org/r/testnet/contract/CAU3HW7S26KXVGP7VE3JKNY2MFCUSDRWO4LPOM5HSLWAUQPP4MQFSMOF
+- Features on-chain categorization and category-based aggregations.
 
 ## Transaction Hashes
 
 ### Contract Deployment
-- Hash: 4ff4e48125e40e52d6cf621c4e244d6f4533d870c6757fcde52d106028e4803b
-- Verify: https://stellar.expert/explorer/testnet/tx/4ff4e48125e40e52d6cf621c4e244d6f4533d870c6757fcde52d106028e4803b
+- Hash: 4b55ecab82f1c9487f7ecea035b935919c844ee8b4e9e8fe160d47ceb79a22d2
+- Verify: https://stellar.expert/explorer/testnet/tx/4b55ecab82f1c9487f7ecea035b935919c844ee8b4e9e8fe160d47ceb79a22d2
 
-### Contract Interaction (PaymentTracker call)
-- Hash: c6418d4e4ca1b35b9bdc5a2ab653335bddd323bc71f8b01feaa8b531bb299137
-- Verify: https://stellar.expert/explorer/testnet/tx/c6418d4e4ca1b35b9bdc5a2ab653335bddd323bc71f8b01feaa8b531bb299137
+### Contract Interaction (PaymentTracker call: record_payment)
+- Hash: d1c39ad9fe2fe02ec2a611b7f656632e271c60bbde7bf02869a8e8f0ad0684dd
+- Verify: https://stellar.expert/explorer/testnet/tx/d1c39ad9fe2fe02ec2a611b7f656632e271c60bbde7bf02869a8e8f0ad0684dd
 
 ## Features
 - Multi-wallet connection via StellarWalletsKit (Freighter, xBull, Lobstr, Albedo)
 - Real-time XLM balance display
 - Send XLM transactions on testnet
 - Transaction history viewer
-- Two deployed Soroban smart contracts with inter-contract communication
+- A unified deployed Soroban smart contract managing payment logic and categorizations
 - Real-time Activity Feed using Soroban event streaming (auto-updates, no manual refresh)
 - Transaction status tracking (pending/success/failed)
 - Error handling for: wallet not found, user rejected connection, insufficient balance
@@ -68,7 +60,7 @@ https://youtu.be/gfPN5L6c26U?si=ZkMfQsuMiSIuKP7C
 ### Smart Contract Tests
 Run with:
 cd contract && cargo test
-- 4 tests passing (SimpleStorage: 2, PaymentTracker: 2)
+- 2 tests passing (PaymentTracker: 2)
 
 ### Frontend Tests
 Run with:
