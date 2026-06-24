@@ -1,21 +1,20 @@
 import { Contract, rpc as SorobanRpc, TransactionBuilder, Networks, nativeToScVal, scValToNative } from "@stellar/stellar-sdk";
 import { kit } from "./stellar";
-import { CONTRACT_ADDRESS as STORAGE_CONTRACT_ADDRESS } from './contract';
 
 const rpcServer = new SorobanRpc.Server("https://soroban-testnet.stellar.org");
-export const PAYMENT_CONTRACT_ADDRESS = "CAC75NNARRWQXNJK2NI22JQF3KV2NJY2VYYRYHYXFHNH66VDDNYXU727";
+export const PAYMENT_CONTRACT_ADDRESS = "CAU3HW7S26KXVGP7VE3JKNY2MFCUSDRWO4LPOM5HSLWAUQPP4MQFSMOF";
 
 export const initPaymentContract = () => {
     return new Contract(PAYMENT_CONTRACT_ADDRESS);
 };
 
-export const recordPayment = async (sender, receiver, amount, publicKey) => {
+export const recordPayment = async (sender, receiver, amount, category, publicKey) => {
     const sourceAccount = await rpcServer.getAccount(publicKey);
     
     const senderVal = nativeToScVal(sender, { type: 'address' });
     const receiverVal = nativeToScVal(receiver, { type: 'address' });
     const amountVal = nativeToScVal(Number(amount), { type: 'i128' });
-    const storageContractVal = nativeToScVal(STORAGE_CONTRACT_ADDRESS, { type: 'address' });
+    const categoryVal = nativeToScVal(category, { type: 'symbol' });
 
     const contract = initPaymentContract();
     
@@ -23,7 +22,7 @@ export const recordPayment = async (sender, receiver, amount, publicKey) => {
         fee: "5000", 
         networkPassphrase: Networks.TESTNET,
     })
-    .addOperation(contract.call("record_payment", senderVal, receiverVal, amountVal, storageContractVal))
+    .addOperation(contract.call("record_payment", senderVal, receiverVal, amountVal, categoryVal))
     .setTimeout(180)
     .build();
 
@@ -97,6 +96,28 @@ export const getPaymentHistory = async (address) => {
     return scValToNative(res.results[0].retval);
 };
 
+export const getTotalByCategory = async (address, category) => {
+    const addressVal = nativeToScVal(address, { type: 'address' });
+    const categoryVal = nativeToScVal(category, { type: 'symbol' });
+    const contract = initPaymentContract();
+    
+    const source = "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF";
+    const account = new SorobanRpc.Account(source, "0");
+    const transaction = new TransactionBuilder(account, {
+        fee: "100",
+        networkPassphrase: Networks.TESTNET,
+    })
+    .addOperation(contract.call("get_total_by_category", addressVal, categoryVal))
+    .setTimeout(30)
+    .build();
+    
+    const res = await rpcServer.simulateTransaction(transaction);
+    if (res.error) throw new Error(res.error);
+    if (!res.results || res.results.length === 0) return 0n;
+    
+    return scValToNative(res.results[0].retval);
+};
+
 export const listenForPaymentEvents = async (callback) => {
     try {
         if (PAYMENT_CONTRACT_ADDRESS === "PLACEHOLDER") return;
@@ -133,3 +154,4 @@ export const listenForPaymentEvents = async (callback) => {
         console.error("Error initializing event listener:", err);
     }
 };
+

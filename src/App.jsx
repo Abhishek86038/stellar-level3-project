@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { connectWallet, getBalance, sendPayment } from './stellar';
-import { setContractValue, getContractValue, CONTRACT_ADDRESS } from './contract';
-import { recordPayment } from './paymentContract';
+import { recordPayment, PAYMENT_CONTRACT_ADDRESS, getTotalByCategory } from './paymentContract';
 import ActivityFeed from './components/ActivityFeed';
 import './index.css';
 
@@ -16,11 +15,11 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [txHash, setTxHash] = useState('');
 
-  // Contract State
-  const [contractKey, setContractKey] = useState('');
-  const [contractValue, setContractValueState] = useState('');
-  const [contractResponse, setContractResponse] = useState('');
-  const [isContractLoading, setIsContractLoading] = useState(false);
+  // Payment Tracking State
+  const [category, setCategory] = useState('Rent');
+  const [insightsCategory, setInsightsCategory] = useState('Rent');
+  const [categoryTotal, setCategoryTotal] = useState(null);
+  const [isInsightsLoading, setIsInsightsLoading] = useState(false);
 
   // Toast State
   const [toasts, setToasts] = useState([]);
@@ -93,7 +92,7 @@ function App() {
     setDestination('');
     setAmount('');
     setTxHash('');
-    setContractResponse('');
+    setCategoryTotal(null);
     addToast('Wallet disconnected', 'info');
   };
 
@@ -117,12 +116,17 @@ function App() {
       setTxHash(hash);
       addToast('Payment sent! Recording on-chain...', 'info', hash);
       
-      await recordPayment(publicKey, destination, amount, publicKey);
+      await recordPayment(publicKey, destination, amount, category, publicKey);
       addToast('Recorded successfully on-chain!', 'success', hash);
       
       setDestination('');
       setAmount('');
       await fetchBalance(publicKey); // Auto refresh balance
+      
+      // Auto-refresh insights if same category
+      if (insightsCategory === category) {
+        handleGetInsights(null, category);
+      }
     } catch (err) {
       addToast(`Transaction failed: ${err.message}`, 'error');
     } finally {
@@ -130,38 +134,18 @@ function App() {
     }
   };
 
-  const handleSetContract = async (e) => {
-    e.preventDefault();
-    if (!contractKey || !contractValue) return;
-    try {
-      setIsContractLoading(true);
-      addToast('Submitting contract state...', 'info');
-      const response = await setContractValue(contractKey, contractValue, publicKey);
-      const hash = response.hash || response.id;
-      setTxHash(hash);
-      addToast('Contract value updated successfully!', 'success', hash);
-      
-      // Auto-refresh the stored value
-      handleGetContract(null, contractKey);
-    } catch (err) {
-      addToast(`Contract interaction failed: ${err.message}`, 'error');
-    } finally {
-      setIsContractLoading(false);
-    }
-  };
-
-  const handleGetContract = async (e, overrideKey) => {
+  const handleGetInsights = async (e, overrideCategory) => {
     if (e) e.preventDefault();
-    const keyToUse = overrideKey || contractKey;
-    if (!keyToUse) return;
+    const catToFetch = overrideCategory || insightsCategory;
     try {
-      setContractResponse('Fetching...');
-      const value = await getContractValue(keyToUse);
-      setContractResponse(`Value for "${keyToUse}": ${value}`);
-      addToast(`Fetched value: ${value}`, 'success');
+      setIsInsightsLoading(true);
+      const total = await getTotalByCategory(publicKey, catToFetch);
+      setCategoryTotal(total.toString());
+      addToast(`Fetched insights for ${catToFetch}`, 'success');
     } catch (err) {
-      setContractResponse(`Error: ${err.message}`);
-      addToast(`Failed to fetch value: ${err.message}`, 'error');
+      addToast(`Failed to fetch insights: ${err.message}`, 'error');
+    } finally {
+      setIsInsightsLoading(false);
     }
   };
 
@@ -276,6 +260,20 @@ function App() {
                       required
                     />
                   </div>
+                  <div className="form-group">
+                    <label>Category</label>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      className="input-styled"
+                    >
+                      <option value="Rent">Rent</option>
+                      <option value="Family Support">Family Support</option>
+                      <option value="Business">Business</option>
+                      <option value="Savings">Savings</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
                   <button className="btn btn-primary full" type="submit" disabled={loading}>
                     {loading ? (
                       <>
@@ -289,70 +287,54 @@ function App() {
 
             {/* Right Column: Contract & Activity */}
             <div className="dashboard-column">
-              {/* Contract Interaction Card */}
+              {/* Payment Insights Card */}
               <div className="glass-card">
                 <div className="card-header-with-badge">
-                  <h2 className="card-title">Storage Contract</h2>
+                  <h2 className="card-title">Payment Insights</h2>
                   <span 
                     className="contract-chip" 
                     title="Click to copy contract address"
-                    onClick={() => handleCopy(CONTRACT_ADDRESS, 'Contract Address')}
+                    onClick={() => handleCopy(PAYMENT_CONTRACT_ADDRESS, 'Contract Address')}
                   >
-                    {CONTRACT_ADDRESS.substring(0, 6)}...{CONTRACT_ADDRESS.substring(CONTRACT_ADDRESS.length - 4)}
+                    {PAYMENT_CONTRACT_ADDRESS.substring(0, 6)}...{PAYMENT_CONTRACT_ADDRESS.substring(PAYMENT_CONTRACT_ADDRESS.length - 4)}
                     <span className="copy-icon">
                       {copiedText === 'Contract Address' ? '✓' : '❐'}
                     </span>
                   </span>
                 </div>
 
-                <form onSubmit={handleSetContract} className="space-y-4">
+                <form onSubmit={handleGetInsights} className="space-y-4">
                   <div className="form-group">
-                    <label>Key (Symbol)</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. my_key"
-                      value={contractKey}
-                      onChange={(e) => setContractKey(e.target.value)}
+                    <label>Select Category</label>
+                    <select
+                      value={insightsCategory}
+                      onChange={(e) => setInsightsCategory(e.target.value)}
                       className="input-styled"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Value (Number)</label>
-                    <input
-                      type="number"
-                      placeholder="e.g. 123"
-                      value={contractValue}
-                      onChange={(e) => setContractValueState(e.target.value)}
-                      className="input-styled"
-                    />
-                  </div>
-                  <div className="btn-grid-two">
-                    <button 
-                      className="btn btn-primary" 
-                      type="submit" 
-                      disabled={isContractLoading || !contractKey || !contractValue}
                     >
-                      {isContractLoading ? (
-                        <>
-                          <div className="mini-spinner"></div> Setting...
-                        </>
-                      ) : 'Set Value'}
-                    </button>
-                    <button 
-                      className="btn btn-secondary" 
-                      type="button"
-                      onClick={(e) => handleGetContract(e)} 
-                      disabled={!contractKey}
-                    >
-                      Get Value
-                    </button>
+                      <option value="Rent">Rent</option>
+                      <option value="Family Support">Family Support</option>
+                      <option value="Business">Business</option>
+                      <option value="Savings">Savings</option>
+                      <option value="Other">Other</option>
+                    </select>
                   </div>
+                  <button 
+                    className="btn btn-secondary full" 
+                    type="submit" 
+                    disabled={isInsightsLoading}
+                  >
+                    {isInsightsLoading ? (
+                      <>
+                        <div className="mini-spinner"></div> Fetching...
+                      </>
+                    ) : 'Get Category Total'}
+                  </button>
                 </form>
 
-                {contractResponse && (
+                {categoryTotal !== null && (
                   <div className="contract-response-box">
-                    <span className="response-label">Response:</span>
-                    <pre className="response-value">{contractResponse}</pre>
+                    <span className="response-label">Total Spent on {insightsCategory}:</span>
+                    <pre className="response-value">{categoryTotal} XLM</pre>
                   </div>
                 )}
               </div>
