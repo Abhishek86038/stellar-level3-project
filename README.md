@@ -59,7 +59,7 @@ https://youtu.be/gfPN5L6c26U?si=ZkMfQsuMiSIuKP7C
 
 ### Smart Contract Tests
 Run with:
-cd contract && cargo test
+cd contract/payment_tracker && cargo test
 - 2 tests passing (PaymentTracker: 2)
 
 ### Frontend Tests
