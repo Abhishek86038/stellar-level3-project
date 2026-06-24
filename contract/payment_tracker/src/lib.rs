@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, String, Symbol, Vec, IntoVal};
+use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, String, Symbol, Vec};
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -8,12 +8,14 @@ pub struct PaymentRecord {
     pub receiver: Address,
     pub amount: i128,
     pub timestamp: u64,
+    pub category: Symbol,
 }
 
 #[contracttype]
 pub enum DataKey {
     PaymentCount(Address),
     PaymentHistory(Address),
+    CategoryTotal(Address, Symbol),
 }
 
 #[contract]
@@ -26,7 +28,7 @@ impl PaymentTracker {
         sender: Address,
         receiver: Address,
         amount: i128,
-        storage_contract: Address,
+        category: Symbol,
     ) {
         sender.require_auth();
 
@@ -36,6 +38,7 @@ impl PaymentTracker {
             receiver: receiver.clone(),
             amount,
             timestamp,
+            category: category.clone(),
         };
 
         // Update count
@@ -50,18 +53,16 @@ impl PaymentTracker {
         history.push_back(record.clone());
         env.storage().persistent().set(&history_key, &history);
 
+        // Update category total
+        let category_key = DataKey::CategoryTotal(sender.clone(), category.clone());
+        let mut category_total: i128 = env.storage().persistent().get(&category_key).unwrap_or(0);
+        category_total += amount;
+        env.storage().persistent().set(&category_key, &category_total);
+
         // Emit Event
         env.events().publish(
-            (symbol_short!("payment"), sender.clone(), receiver.clone()),
+            (symbol_short!("payment"), sender.clone(), receiver.clone(), category.clone()),
             amount,
-        );
-
-        // Cross-contract call to SimpleStorage.set
-        let key = symbol_short!("last_pay");
-        let _res: () = env.invoke_contract(
-            &storage_contract,
-            &symbol_short!("set"),
-            (key, amount as u64).into_val(&env),
         );
     }
 
@@ -74,19 +75,17 @@ impl PaymentTracker {
         let history_key = DataKey::PaymentHistory(address);
         env.storage().persistent().get(&history_key).unwrap_or(Vec::new(&env))
     }
+
+    pub fn get_total_by_category(env: Env, address: Address, category: Symbol) -> i128 {
+        let category_key = DataKey::CategoryTotal(address, category);
+        env.storage().persistent().get(&category_key).unwrap_or(0)
+    }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use soroban_sdk::{testutils::{Address as _, Events}, Env, vec};
-
-    #[contract]
-    pub struct MockStorage;
-    #[contractimpl]
-    impl MockStorage {
-        pub fn set(_env: Env, _key: Symbol, _value: u64) {}
-    }
+    use soroban_sdk::{testutils::{Address as _, Events}, Env, vec, symbol_short};
 
     #[test]
     fn test_record_payment() {
@@ -95,13 +94,12 @@ mod test {
         
         let contract_id = env.register_contract(None, PaymentTracker);
         let client = PaymentTrackerClient::new(&env, &contract_id);
-        
-        let storage_id = env.register_contract(None, MockStorage);
 
         let sender = Address::generate(&env);
         let receiver = Address::generate(&env);
+        let category = symbol_short!("Rent");
         
-        client.record_payment(&sender, &receiver, &100, &storage_id);
+        client.record_payment(&sender, &receiver, &100, &category);
         
         // Verify event
         let events = env.events().all();
@@ -114,6 +112,10 @@ mod test {
         let history = client.get_payment_history(&sender);
         assert_eq!(history.len(), 1);
         assert_eq!(history.get(0).unwrap().amount, 100);
+        assert_eq!(history.get(0).unwrap().category, category);
+
+        // Verify category total
+        assert_eq!(client.get_total_by_category(&sender, &category), 100);
     }
 
     #[test]
@@ -123,17 +125,18 @@ mod test {
         
         let contract_id = env.register_contract(None, PaymentTracker);
         let client = PaymentTrackerClient::new(&env, &contract_id);
-        let storage_id = env.register_contract(None, MockStorage);
 
         let sender = Address::generate(&env);
         let receiver = Address::generate(&env);
+        let category1 = symbol_short!("Rent");
+        let category2 = symbol_short!("Food");
         
         assert_eq!(client.get_payment_count(&sender), 0);
         
-        client.record_payment(&sender, &receiver, &50, &storage_id);
+        client.record_payment(&sender, &receiver, &50, &category1);
         assert_eq!(client.get_payment_count(&sender), 1);
         
-        client.record_payment(&sender, &receiver, &25, &storage_id);
+        client.record_payment(&sender, &receiver, &25, &category2);
         assert_eq!(client.get_payment_count(&sender), 2);
     }
 }
